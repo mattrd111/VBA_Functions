@@ -38,14 +38,15 @@ Nothing else needs it.
 No PowerShell, no trust setting, five minutes:
 
 1. Open Excel, new blank workbook, `Alt+F11` for the VBA editor.
-2. **File → Import File…** and import all eight modules from `src`:
-   `modApp`, `modArray`, `modDate`, `modDictionary`, `modFile`, `modRange`,
-   `modString`, `modWorkbook`.
-3. Import all sixteen modules from `addin`:
+2. **File → Import File…** and import all ten modules from `src`:
+   `modApp`, `modArray`, `modDate`, `modDictionary`, `modFile`, `modFinance`,
+   `modRange`, `modString`, `modWaterfall`, `modWorkbook`.
+3. Import all seventeen modules from `addin`:
    `modDoctorCommon`, `modDoctorScan`, `modDoctorNames`, `modDoctorStyles`,
    `modDoctorSheets`, `modDoctorLinks`, `modDoctorTools`, `modDoctorAudit`,
    `modDoctorRunner`, `modAuditFormula`, `modAuditCore`, `modModelAudit`,
-   `modWrangleStack`, `modWrangleShape`, `modWrangleMatch`, `modDoctorMenu`.
+   `modWrangleStack`, `modWrangleShape`, `modWrangleMatch`, `modFundHelper`,
+   `modDoctorMenu`.
 4. Open `addin/ThisWorkbook.cls` in a text editor, copy everything from
    `Option Explicit` down, and paste it into the `ThisWorkbook` module of your
    new workbook. (Document modules cannot be imported — they have to be pasted.)
@@ -97,6 +98,7 @@ The menu is grouped by what each tool does to your workbook.
 | Unpivot a cross-tab | Months across the top become rows down the side |
 | Fill blanks down | The group label that appears once and is blank for the next forty rows |
 | Fuzzy match two lists | Two lists that are the same list, where none of the strings match |
+| Fund maths reference sheet | A worked example of every fund function, with live formulas |
 
 **Cells** — acts on the selection.
 
@@ -152,6 +154,33 @@ Where it deliberately says nothing:
 The algorithm behind the hardcode check has a test —
 `python build/test_formula_parser.py` — which mirrors the VBA in Python so the
 rules can be exercised outside Excel.
+
+## The fund functions
+
+`modFinance` and `modWaterfall` are worksheet functions, not menu commands.
+While the add-in is installed they work in any workbook:
+
+```
+=FundXIRR(C5:C40, B5:B40)                       money-weighted return
+=FundIRR(C5:C40, B5:B40, NAV, TODAY())          ... including the closing NAV
+=TVPI(C5:C40, NAV)                              total value to paid-in
+=AccruedPref(C5:C40, B5:B40, 8%, TODAY())       the compounded hurdle
+=KSPME(C5:C40, B5:B40, D5:D40, NAV)             against a public index
+=Waterfall(D5, capital, pref, 20%, 100%, "GPCarry")
+```
+
+**Data → Fund maths reference sheet** builds a worked example of all of them
+with live formulas, which is the quickest way to see the syntax.
+
+Two things worth knowing:
+
+- The preferred return has two switches that differ by LPA and move the answer
+  a long way: whether a distribution repays capital or the hurdle first
+  (`capitalFirst`), and whether unpaid preferred earns the rate itself
+  (`compound`). Check both against the document before anyone relies on the
+  number.
+- A sheet using these functions shows `#NAME?` for anyone without the add-in
+  installed. Convert to values before sending it out.
 
 ## Before you run anything destructive
 

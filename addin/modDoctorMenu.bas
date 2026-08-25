@@ -63,6 +63,7 @@ Public Sub BuildDoctorMenu()
     AddButton group, "&Unpivot a cross-tab...", "UnpivotSelection", 431, True
     AddButton group, "Fill &blanks down...", "FillBlanksDown", 370, False
     AddButton group, "Fu&zzy match two lists...", "FuzzyMatchLists", 1728, True
+    AddButton group, "F&und maths reference sheet", "ShowFundMathsReference", 1665, True
 
     '--- Cells: acts on the selection ----------------------------------------
     Set group = AddPopup(root, "Cel&ls", False)

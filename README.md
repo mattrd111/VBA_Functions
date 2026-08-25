@@ -24,6 +24,8 @@ and the rest of the junk that makes a workbook heavy —
 | [`modDate`](src/modDate.bas) | Month and quarter ends, fiscal periods, working days, forgiving date parsing |
 | [`modDictionary`](src/modDictionary.bas) | Dictionary-based replacements for VLOOKUP, SUMIF and COUNTIF loops |
 | [`modFile`](src/modFile.bas) | Paths, folder listings, text and CSV files, file and folder pickers |
+| [`modFinance`](src/modFinance.bas) | Fund maths: money-weighted returns, the multiples, preferred return, PME |
+| [`modWaterfall`](src/modWaterfall.bas) | Splitting a distribution between LP and GP |
 | [`modRange`](src/modRange.bas) | Last row and column, header lookups, bulk read/write, tidy-ups |
 | [`modString`](src/modString.bas) | Cleaning, slicing, padding, regular expressions, fuzzy matching |
 | [`modWorkbook`](src/modWorkbook.bas) | Creating, finding and clearing sheets, opening workbooks, PDF export |
@@ -168,6 +170,42 @@ If a macro ever dies inside `FastMode` and leaves the screen frozen, run
 
 `BuildLookup` treats numbers stored as text as numbers, but leaves text that
 merely looks numeric alone — so `"007"` and `7` stay apart.
+
+### modFinance — fund and deal maths
+
+Worksheet functions as well as VBA ones. Install the add-in and they work in any
+workbook.
+
+| Function | Notes |
+| --- | --- |
+| `FundXIRR(values, dates)` | Money-weighted return. Brackets the root then bisects, so it finds an answer wherever one exists — Excel's `XIRR` runs Newton from one guess and gives up with `#NUM!` more often than it should |
+| `FundIRR(values, dates, [nav], [valuationDate])` | The same with the closing NAV added as a final inflow — since-inception IRR as an LP reports it |
+| `FundXNPV(rate, values, dates)` | Present value of dated cash flows |
+| `PaidIn` / `Distributed` / `FundDPI` / `RVPI` / `TVPI` / `MOIC` | The multiples, from one signed cash-flow series |
+| `AccruedPref(values, dates, rate, asOf, [capitalFirst], [compound])` | The compounded hurdle on unreturned capital — the input nobody can work out by hand |
+| `UnreturnedCapital(…)` | The capital balance the same walk produces |
+| `KSPME(values, dates, indexLevels, [nav])` | Kaplan-Schoar public market equivalent. Above 1, the fund beat the index |
+| `CAGR` / `AnnualisedReturn` / `TimeWeightedReturn` | The everyday ones |
+
+Two switches on the preferred return move the number a lot and differ by LPA, so
+they are arguments rather than assumptions: whether a distribution repays
+capital or the hurdle first, and whether unpaid preferred earns the rate itself.
+
+### modWaterfall — LP and GP splits
+
+```
+=Waterfall(D5, capitalDue, prefDue, 20%, 100%, "LPTotal")
+=Waterfall(D5, capitalDue, prefDue, 20%, 100%, "GPCarry")
+```
+
+Return of capital, preferred, GP catch-up, then the split — one part at a time,
+so it works in any version of Excel. The parts always sum to the amount
+distributed, and `"Total"` returns that amount so a model can tie itself out.
+`CarriedInterest` and `NetToGross` wrap the common questions.
+
+The maths is checked by `python build/test_fund_maths.py`, which includes 20,000
+random waterfalls verifying that the tiers always tie back and that the GP never
+takes more than its carry share of the profit.
 
 ### modFile — files and folders
 
@@ -322,6 +360,7 @@ number looks. The `Your call` column is left empty on purpose.
 | **Selection tools** | Trim and clean text, freeze formulas to values, strip hyperlinks |
 | **Model integrity** | Row-by-row formula consistency, numbers typed over formulas, hardcoded assumptions, volatile functions, whole-column references, error cells — all read-only |
 | **Data** | Stack many extracts into one table matched by header name, unpivot a cross-tab, fill blanks down, fuzzy-match two lists that nearly agree |
+| **Fund maths** | IRR, DPI/TVPI/MOIC, accrued preferred return, KS-PME and a distribution waterfall, as worksheet functions. **Fund maths reference sheet** builds a worked example of every one |
 | **Backup** | Timestamped copy beside the original, offered automatically before anything destructive |
 
 Nothing it does can be undone with Ctrl+Z, so every destructive action confirms
@@ -357,8 +396,13 @@ The formula parser behind the hardcode check is the one piece of logic here
 with real edge cases, so it has a test that runs outside Excel:
 
 ```
-python build/test_formula_parser.py     # 29/29 passed
+python build/test_formula_parser.py     # the audit's hardcode rules
+python build/test_fund_maths.py         # IRR, multiples, preferred return, waterfall
 ```
+
+Both mirror the VBA in Python and check it against answers that are known
+without a solver having a vote — `-100` today and `+110` in a year is 10%, and
+a waterfall's tiers sum to what was distributed or the model is wrong.
 
 ---
 

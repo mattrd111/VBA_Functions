@@ -48,6 +48,8 @@ $moduleFiles = @(
     'src\modArray.bas',
     'src\modDate.bas',
     'src\modDictionary.bas',
+    'src\modFinance.bas',
+    'src\modWaterfall.bas',
     'src\modFile.bas',
     'src\modRange.bas',
     'src\modString.bas',
@@ -67,6 +69,7 @@ $moduleFiles = @(
     'addin\modWrangleStack.bas',
     'addin\modWrangleShape.bas',
     'addin\modWrangleMatch.bas',
+    'addin\modFundHelper.bas',
     'addin\modDoctorMenu.bas'
 )
 $thisWorkbookFile = Join-Path $repoRoot 'addin\ThisWorkbook.cls'
