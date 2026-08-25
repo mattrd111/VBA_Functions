@@ -30,7 +30,11 @@ Public Sub BuildDoctorMenu()
     root.Caption = MENU_CAPTION
     root.Tag = MENU_TAG
 
-    AddButton root, "&Audit workbook...", "AuditWorkbook", 23, False
+    AddButton root, "&Audit workbook (size and bloat)...", "AuditWorkbook", 23, False
+    AddButton root, "Audit &model (formulas)...", "AuditModel", 466, False
+    AddButton root, "Formula ma&p (this sheet)", "ShowFormulaMap", 1000, False
+    AddButton root, "Select fla&gged cells (this sheet)", "SelectFlaggedCells", 350, False
+
     AddButton root, "Clean &everything (safe)...", "CleanEverything", 358, True
 
     AddButton root, "Clean &names...", "CleanNames", 472, True

@@ -243,8 +243,8 @@ tens of thousands of cell styles, hundreds of broken defined names, a used range
 that runs to row 1,048,576 and a pile of invisible drawing objects. It opens
 slowly, saves slowly, and one day says *"Too many different cell formats"*.
 
-Workbook Doctor finds all of that and offers to remove it. It lives on the
-**Add-ins** tab of the ribbon.
+Workbook Doctor finds all of that and offers to remove it — and reviews the
+formulas while it is in there. It lives on the **Add-ins** tab of the ribbon.
 
 **Start with Audit workbook.** It changes nothing and its first section is a
 prioritised list of what is actually worth doing to the workbook in front of you:
@@ -262,6 +262,32 @@ Low        Remove invisible objects   14 hidden or zero-size drawing object(s)
 Then run the tools it points at, or **Clean everything (safe)** for the low-risk
 half of all of them in one pass.
 
+**Audit model** is the other half, and the one to reach for when management
+hands over a model and you have two days to decide whether to trust it. It
+changes nothing, and it finds what a reviewer scrolling through cells will not:
+
+```
+High    Forecast   D14   Number typed into a calculated row
+                         The rest of this row calculates; this cell holds a typed number.
+High    Forecast   H22   Number inside a formula
+                         The value 1.03 is typed into the formula. An assumption belongs
+                         in a cell of its own.  (this formula appears 48 times)
+Medium  Opex       B9    Formula differs from the row
+                         The other 47 cells in this run use =RC[-1]*(1+R4C2)
+```
+
+The rule it runs on is the one every model audit tool is built on: in a working
+model a row holds one formula copied across, so read the block in R1C1 and the
+odd one out falls straight out of the comparison. Then it reads each distinct
+formula once to find assumptions typed into the middle of a calculation —
+skipping the ones that are really indexes, so `VLOOKUP(x,y,3,0)` stays quiet
+while `ROUND(B5*1.2,2)` does not.
+
+**Formula map** draws the sheet one character per cell — inputs, formulas, and
+the cells that break the pattern — so its shape is visible in a single screen.
+**Select flagged cells** picks out the suspects on the active sheet so you can
+look at them where they live.
+
 | | |
 | --- | --- |
 | **Names** | Classifies every name as reserved, in use, broken, external, hidden or unused, and deletes only the categories you approve. "Unused" is worked out by reading every formula, conditional format, validation rule, chart series, pivot source and other name — so it is a good guess, not a fact, which is why deleting those is a separate opt-in |
@@ -271,6 +297,7 @@ half of all of them in one pass.
 | **Conditional formatting** | Counts rules per sheet and removes the ones that apply only to empty cells |
 | **Links** | Lists every linked workbook, says which files have gone missing, shows the cells that depend on them, and breaks them on request |
 | **Selection tools** | Trim and clean text, freeze formulas to values, strip hyperlinks |
+| **Model integrity** | Row-by-row formula consistency, numbers typed over formulas, hardcoded assumptions, volatile functions, whole-column references, error cells — all read-only |
 | **Backup** | Timestamped copy beside the original, offered automatically before anything destructive |
 
 Nothing it does can be undone with Ctrl+Z, so every destructive action confirms
@@ -298,7 +325,15 @@ or import the modules by hand: [addin/INSTALL.md](addin/INSTALL.md).
 src/        the library - eight standalone modules, no dependencies
 addin/      Workbook Doctor - the add-in, built on src
 build/      Build-AddIn.ps1, which assembles the .xlam
+            test_formula_parser.py, which checks the audit's parsing rules
 examples/   runnable examples of the library patterns
+```
+
+The formula parser behind the hardcode check is the one piece of logic here
+with real edge cases, so it has a test that runs outside Excel:
+
+```
+python build/test_formula_parser.py     # 29/29 passed
 ```
 
 ---

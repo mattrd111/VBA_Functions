@@ -41,10 +41,11 @@ No PowerShell, no trust setting, five minutes:
 2. **File → Import File…** and import all eight modules from `src`:
    `modApp`, `modArray`, `modDate`, `modDictionary`, `modFile`, `modRange`,
    `modString`, `modWorkbook`.
-3. Import all ten modules from `addin`:
+3. Import all thirteen modules from `addin`:
    `modDoctorCommon`, `modDoctorScan`, `modDoctorNames`, `modDoctorStyles`,
    `modDoctorSheets`, `modDoctorLinks`, `modDoctorTools`, `modDoctorAudit`,
-   `modDoctorRunner`, `modDoctorMenu`.
+   `modDoctorRunner`, `modDoctorMenu`, `modAuditFormula`, `modAuditCore`,
+   `modModelAudit`.
 4. Open `addin/ThisWorkbook.cls` in a text editor, copy everything from
    `Option Explicit` down, and paste it into the `ThisWorkbook` module of your
    new workbook. (Document modules cannot be imported — they have to be pasted.)
@@ -63,7 +64,10 @@ list of what is actually worth doing to the workbook in front of you.
 
 | Menu item | What it does |
 | --- | --- |
-| Audit workbook | Read-only health check: findings first, then the detail per sheet |
+| Audit workbook (size and bloat) | Read-only health check: findings first, then the detail per sheet |
+| **Audit model (formulas)** | Read-only review of formula integrity: broken rows, numbers typed over formulas, hardcoded assumptions, volatile functions, error cells |
+| **Formula map (this sheet)** | One character per cell — the shape of a sheet in one screen |
+| **Select flagged cells (this sheet)** | Selects the suspect cells so you can see them in context |
 | Clean everything (safe) | Runs the low-risk half of every tool in one pass |
 | Clean names | Deletes broken, external-link and hidden defined names; unused ones are opt-in |
 | Clean styles | Deletes duplicate styles (`Normal 2`), or every custom style |
@@ -78,6 +82,35 @@ list of what is actually worth doing to the workbook in front of you.
 | Selection to values | Freezes formulas |
 | Remove hyperlinks from selection | Keeps the text |
 | Backup this workbook | Timestamped copy beside the original |
+
+## Reading a model audit
+
+**Audit model** never changes the workbook. It reports:
+
+| Finding | What it means |
+| --- | --- |
+| **Number typed into a calculated row** | Someone replaced a formula with a value. This is the one that costs money |
+| **Formula differs from the row** | The other cells in that run share one formula and this one does not. At the first or last cell of a run it drops to Medium, because opening balances and closing columns often differ on purpose |
+| **Number inside a formula** | An assumption buried where nobody will find it. Indexes and counts standing alone as arguments to lookup, rounding and date functions are ignored, so `VLOOKUP(x,y,3,0)` is quiet while `ROUND(B5*1.2,2)` is not |
+| **Error showing** | `#REF!`, `#VALUE!` and friends. `#N/A` is reported separately at Low, since a lookup is often meant to miss |
+| **Volatile function** / **Whole-column reference** | Why the model takes ten seconds to recalculate |
+| **Reads another workbook** | A dependency on a file that may not be there tomorrow |
+
+Where it deliberately says nothing:
+
+- Runs shorter than four cells are not judged — "inconsistent" means nothing
+  across three cells.
+- A run with no dominant formula is left alone. If a row is a set of one-offs,
+  there is no pattern to deviate from.
+- Array and spilled formulas are skipped. Their R1C1 shifts per cell by design
+  and would otherwise light up the whole report.
+- Rows only, not columns. Financial models run periods across the page, and
+  scanning both directions doubles the false positives without finding much.
+- No check reports more than 150 findings per sheet.
+
+The algorithm behind the hardcode check has a test —
+`python build/test_formula_parser.py` — which mirrors the VBA in Python so the
+rules can be exercised outside Excel.
 
 ## Before you run anything destructive
 
