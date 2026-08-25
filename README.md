@@ -361,12 +361,45 @@ number looks. The `Your call` column is left empty on purpose.
 | **Model integrity** | Row-by-row formula consistency, numbers typed over formulas, hardcoded assumptions, volatile functions, whole-column references, error cells — all read-only |
 | **Data** | Stack many extracts into one table matched by header name, unpivot a cross-tab, fill blanks down, fuzzy-match two lists that nearly agree |
 | **Fund maths** | IRR, DPI/TVPI/MOIC, accrued preferred return, KS-PME and a distribution waterfall, as worksheet functions. **Fund maths reference sheet** builds a worked example of every one |
+| **House style** | Number format cycling, the Alpha FMC table style, input/formula colouring, chart colours, palette reference |
 | **Backup** | Timestamped copy beside the original, offered automatically before anything destructive |
 
 Nothing it does can be undone with Ctrl+Z, so every destructive action confirms
 first and offers a backup. Read
 [addin/INSTALL.md](addin/INSTALL.md) for the build, the full menu and the
 caveats worth knowing before you point it at a workbook that matters.
+
+### House style
+
+The palette and type are read out of the **Alpha FMC 2026** PowerPoint theme, so
+a table formatted here sits next to a slide without anyone reaching for the
+eyedropper.
+
+| | |
+| --- | --- |
+| Ink | `#2A2723` — the warm near-black everything sits on |
+| Primary | `#503AF5` violet, with the tint ramp down to `#DCD7FC` |
+| Table header | `#EDEBFD` pale violet fill, 9pt, **not bold**, and **no borders** |
+| Panel / banding | `#F0F5EB`, over sage `#BBC1B2` |
+| Type | Quire Sans, 10pt body and 9pt headers |
+| Chart ramp | `#1E2999 · #6085DC · #64B0E2 · #4BA379 · #79C792` |
+
+Their tables carry no borders at all and their headers are not bold — the
+formatter follows that rather than quietly correcting it.
+
+**Cycle number format** is the one that earns its place: each press steps the
+selection 0dp → 1dp → 2dp → thousands → millions → £m and says where it landed
+in the status bar. There are matching cycles for percentages and dates.
+
+**Colour inputs and formulas** applies the modelling convention — blue for a
+typed number, black for a formula, green for one reading another sheet, red for
+one reading another workbook. Those are the conventional colours rather than
+Alpha's, because the whole value of the convention is that everyone already
+reads it the same way.
+
+The number format ladders are *not* from the template, which does not specify
+any — they are the usual consulting conventions, and they sit in three functions
+at the top of [`modHouseStyle`](addin/modHouseStyle.bas) to be edited.
 
 ### Building it
 

@@ -41,12 +41,12 @@ No PowerShell, no trust setting, five minutes:
 2. **File → Import File…** and import all ten modules from `src`:
    `modApp`, `modArray`, `modDate`, `modDictionary`, `modFile`, `modFinance`,
    `modRange`, `modString`, `modWaterfall`, `modWorkbook`.
-3. Import all seventeen modules from `addin`:
+3. Import all nineteen modules from `addin`:
    `modDoctorCommon`, `modDoctorScan`, `modDoctorNames`, `modDoctorStyles`,
    `modDoctorSheets`, `modDoctorLinks`, `modDoctorTools`, `modDoctorAudit`,
    `modDoctorRunner`, `modAuditFormula`, `modAuditCore`, `modModelAudit`,
    `modWrangleStack`, `modWrangleShape`, `modWrangleMatch`, `modFundHelper`,
-   `modDoctorMenu`.
+   `modHouseStyle`, `modDoctorMenu`.
 4. Open `addin/ThisWorkbook.cls` in a text editor, copy everything from
    `Option Explicit` down, and paste it into the `ThisWorkbook` module of your
    new workbook. (Document modules cannot be imported — they have to be pasted.)
@@ -99,6 +99,18 @@ The menu is grouped by what each tool does to your workbook.
 | Fill blanks down | The group label that appears once and is blank for the next forty rows |
 | Fuzzy match two lists | Two lists that are the same list, where none of the strings match |
 | Fund maths reference sheet | A worked example of every fund function, with live formulas |
+
+**Format** — the Alpha FMC house style.
+
+| | |
+| --- | --- |
+| Cycle number / percent / date format | Each press steps the selection along a ladder and reports where it landed. `0dp → 1dp → 2dp → thousands → millions → £m` |
+| Style as Alpha table | Header fill, house type, no borders, banded rows |
+| Style as header row / total row | The pieces on their own |
+| House type on this sheet | Quire Sans throughout, gridlines off — what makes a sheet screenshot cleanly into a slide |
+| Colour inputs and formulas | Blue typed, black calculated, green from another sheet, red from another workbook |
+| Alpha chart colours | Recolours the selected chart in the template's series order |
+| Alpha palette reference | A swatch sheet: every colour, its hex, and what it is for |
 
 **Cells** — acts on the selection.
 
@@ -154,6 +166,32 @@ Where it deliberately says nothing:
 The algorithm behind the hardcode check has a test —
 `python build/test_formula_parser.py` — which mirrors the VBA in Python so the
 rules can be exercised outside Excel.
+
+## The house style
+
+Read out of the Alpha FMC 2026 PowerPoint theme:
+
+| | |
+| --- | --- |
+| Ink | `#2A2723` |
+| Primary violet | `#503AF5`, tints to `#DCD7FC` |
+| Table header fill | `#EDEBFD` |
+| Panel / banding | `#F0F5EB`, sage `#BBC1B2` |
+| Type | Quire Sans — 10pt body, 9pt headers, headers not bold |
+| Chart series | `#1E2999 · #6085DC · #64B0E2 · #4BA379 · #79C792` |
+
+Two things to know:
+
+- The template's tables have **no borders** and their headers are **not bold**.
+  The formatter follows that. If you want a house rule different from the
+  template, `ApplyHeaderStyle` in `modHouseStyle` is four lines.
+- The **number format ladders are not from the template**, which does not
+  specify any. They are the usual consulting conventions, sitting in
+  `NumberLadder`, `PercentLadder` and `DateLadder` at the top of the module so
+  they can be changed in one place.
+
+If Quire Sans is not installed, Excel substitutes a font and everything else
+still applies.
 
 ## The fund functions
 

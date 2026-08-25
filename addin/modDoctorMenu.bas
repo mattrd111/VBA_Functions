@@ -65,6 +65,19 @@ Public Sub BuildDoctorMenu()
     AddButton group, "Fu&zzy match two lists...", "FuzzyMatchLists", 1728, True
     AddButton group, "F&und maths reference sheet", "ShowFundMathsReference", 1665, True
 
+    '--- Format: the Alpha house style ---------------------------------------
+    Set group = AddPopup(root, "&Format", False)
+    AddButton group, "Cycle &number format", "CycleNumberFormat", 1731, False
+    AddButton group, "Cycle &percent format", "CyclePercentFormat", 402, False
+    AddButton group, "Cycle &date format", "CycleDateFormat", 125, False
+    AddButton group, "Style as Alpha &table", "StyleAlphaTable", 1663, True
+    AddButton group, "Style as &header row", "StyleAlphaHeader", 293, False
+    AddButton group, "Style as t&otal row", "StyleAlphaTotal", 459, False
+    AddButton group, "House type on this &sheet...", "StyleAlphaSheet", 291, False
+    AddButton group, "&Colour inputs and formulas...", "ColourInputsAndFormulas", 401, True
+    AddButton group, "Alpha chart c&olours", "ApplyAlphaChartColours", 435, True
+    AddButton group, "Alpha p&alette reference", "ShowAlphaPalette", 1000, False
+
     '--- Cells: acts on the selection ----------------------------------------
     Set group = AddPopup(root, "Cel&ls", False)
     AddButton group, "&Trim and clean selection", "TrimAndCleanSelection", 384, False
