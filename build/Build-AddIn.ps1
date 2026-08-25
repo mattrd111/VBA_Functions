@@ -113,18 +113,28 @@ try {
 
     $workbook = $excel.Workbooks.Add()
 
-    try {
-        $project = $workbook.VBProject
-    }
-    catch {
+    # When the trust setting is off, PowerShell gets $null back from this rather
+    # than an exception - so a catch alone would let a null through and the
+    # failure would surface later as "cannot call a method on a null-valued
+    # expression", which tells you nothing.
+    $project = $null
+    try { $project = $workbook.VBProject } catch { $project = $null }
+
+    if (($null -eq $project) -or ($null -eq $project.VBComponents)) {
         throw @"
-Excel would not let the script touch the VBA project.
+Excel would not let the script reach the workbook's VBA project.
 
-Switch on: File > Options > Trust Center > Trust Center Settings >
-           Macro Settings > Trust access to the VBA project object model
+This is the setting, and it is off by default:
 
-then run this script again. (You can switch it back off afterwards - it is only
-needed while building.)
+  Excel > File > Options > Trust Center > Trust Center Settings >
+  Macro Settings > tick "Trust access to the VBA project object model"
+
+Tick it and run this script again. You can untick it afterwards - it is only
+needed while the add-in is being built.
+
+If that box is greyed out, your machine has it locked by policy. In that case
+neither builder can work: import the modules by hand instead, following
+addin\INSTALL.md.
 "@
     }
 
