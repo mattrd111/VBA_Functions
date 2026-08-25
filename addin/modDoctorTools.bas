@@ -167,14 +167,19 @@ End Sub
 '------------------------------------------------------------------------------
 Public Sub AboutDoctor()
     MsgBox DOCTOR_NAME & "  version " & DOCTOR_VERSION & vbNewLine & _
-           String$(46, "-") & vbNewLine & vbNewLine & _
-           "Tools for workbooks that have grown heavy: unused names, duplicate " & _
-           "styles, runaway used ranges, stray drawing objects and external links." & _
-           vbNewLine & vbNewLine & _
+           String$(52, "-") & vbNewLine & vbNewLine & _
+           "AUDIT   reads and reports, changes nothing." & vbNewLine & _
+           "        Workbook: what is making the file heavy." & vbNewLine & _
+           "        Model: rows that stopped calculating, numbers typed over" & vbNewLine & _
+           "        formulas, assumptions buried inside them." & vbNewLine & vbNewLine & _
+           "CLEAN   unused names, duplicate styles, runaway used ranges," & vbNewLine & _
+           "        stray objects, dead links." & vbNewLine & vbNewLine & _
+           "DATA    stack many extracts into one table, unpivot a cross-tab," & vbNewLine & _
+           "        fill blanks down, match two lists that nearly agree." & vbNewLine & vbNewLine & _
            "Everything destructive asks first and offers a backup. None of it can " & _
            "be undone with Ctrl+Z, so take the backup." & vbNewLine & vbNewLine & _
-           "Start with Audit workbook - it changes nothing and tells you what is " & _
-           "worth doing." & vbNewLine & vbNewLine & _
+           "Start with Audit - it costs nothing and tells you what is worth doing." & _
+           vbNewLine & vbNewLine & _
            "Source: github.com/mattrd111/VBA_Functions", _
            vbInformation, DOCTOR_NAME
 End Sub

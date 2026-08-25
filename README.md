@@ -288,6 +288,29 @@ the cells that break the pattern — so its shape is visible in a single screen.
 **Select flagged cells** picks out the suspects on the active sheet so you can
 look at them where they live.
 
+### The data tools
+
+The other half of the job: thirty-six monthly extracts that need to become one
+table before anything can be analysed.
+
+**Stack selected sheets** — Ctrl+click the tabs, run it. Columns are matched by
+header *name*, not position, so a source with its columns in a different order
+lands in the right place and one missing a column leaves blanks. The stack
+report names which source was missing what, which is usually the finding rather
+than the footnote. **Stack files in a folder** does the same across a directory.
+
+**Unpivot a cross-tab** turns months running across the top into rows down the
+side. **Fill blanks down** fixes the group label that appears once and is blank
+for the next forty rows. Between them they are what stands between a management
+extract and a pivot table.
+
+**Fuzzy match two lists** runs three passes — exact once both sides are tidied,
+exact once company decoration is stripped (`THE Acme Group Ltd.` and `Acme Group
+Limited` are the same company), then closest match by edit distance. It reports
+the best match, its score, the verdict, and the *next best* match with its score,
+because when the top two are close the match is a coin toss however high the
+number looks. The `Your call` column is left empty on purpose.
+
 | | |
 | --- | --- |
 | **Names** | Classifies every name as reserved, in use, broken, external, hidden or unused, and deletes only the categories you approve. "Unused" is worked out by reading every formula, conditional format, validation rule, chart series, pivot source and other name — so it is a good guess, not a fact, which is why deleting those is a separate opt-in |
@@ -298,6 +321,7 @@ look at them where they live.
 | **Links** | Lists every linked workbook, says which files have gone missing, shows the cells that depend on them, and breaks them on request |
 | **Selection tools** | Trim and clean text, freeze formulas to values, strip hyperlinks |
 | **Model integrity** | Row-by-row formula consistency, numbers typed over formulas, hardcoded assumptions, volatile functions, whole-column references, error cells — all read-only |
+| **Data** | Stack many extracts into one table matched by header name, unpivot a cross-tab, fill blanks down, fuzzy-match two lists that nearly agree |
 | **Backup** | Timestamped copy beside the original, offered automatically before anything destructive |
 
 Nothing it does can be undone with Ctrl+Z, so every destructive action confirms

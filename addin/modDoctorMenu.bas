@@ -2,9 +2,13 @@ Attribute VB_Name = "modDoctorMenu"
 '==============================================================================
 ' modDoctorMenu - the menu the add-in puts on the ribbon
 '------------------------------------------------------------------------------
-' Built with CommandBars rather than ribbon XML, so the whole add-in is plain
+' Built with CommandBars rather than ribbon XML, so the whole add-in stays plain
 ' importable VBA with nothing to unzip or hand-edit. Excel shows it as
 ' "Workbook Doctor" on the Add-ins tab.
+'
+' Grouped into submenus, because a flat list of thirty tools is a list nobody
+' reads: Audit reports and changes nothing, Clean changes the workbook, Data
+' reshapes an extract into something you can pivot, Cells acts on a selection.
 '
 ' Depends on: every other Doctor module
 '==============================================================================
@@ -19,6 +23,7 @@ Private Const MENU_CAPTION As String = "Workbook &Doctor"
 '------------------------------------------------------------------------------
 Public Sub BuildDoctorMenu()
     Dim root As CommandBarPopup
+    Dim group As CommandBarPopup
 
     RemoveDoctorMenu
 
@@ -30,31 +35,44 @@ Public Sub BuildDoctorMenu()
     root.Caption = MENU_CAPTION
     root.Tag = MENU_TAG
 
-    AddButton root, "&Audit workbook (size and bloat)...", "AuditWorkbook", 23, False
-    AddButton root, "Audit &model (formulas)...", "AuditModel", 466, False
-    AddButton root, "Formula ma&p (this sheet)", "ShowFormulaMap", 1000, False
-    AddButton root, "Select fla&gged cells (this sheet)", "SelectFlaggedCells", 350, False
+    '--- Audit: reads, reports, changes nothing ------------------------------
+    Set group = AddPopup(root, "&Audit  (changes nothing)", False)
+    AddButton group, "Audit &workbook  (size and bloat)...", "AuditWorkbook", 23, False
+    AddButton group, "Audit &model  (formulas)...", "AuditModel", 466, False
+    AddButton group, "Formula ma&p  (this sheet)", "ShowFormulaMap", 1000, False
+    AddButton group, "Select fla&gged cells  (this sheet)", "SelectFlaggedCells", 350, False
+    AddButton group, "List defined &names", "ShowNamesReport", 353, True
+    AddButton group, "List cell &styles", "ShowStylesReport", 353, False
+    AddButton group, "&External links...", "ShowExternalLinks", 1663, False
 
-    AddButton root, "Clean &everything (safe)...", "CleanEverything", 358, True
+    '--- Clean: changes the workbook -----------------------------------------
+    Set group = AddPopup(root, "&Clean  (changes the workbook)", False)
+    AddButton group, "Clean &everything  (safe)...", "CleanEverything", 358, False
+    AddButton group, "Clean &names...", "CleanNames", 472, True
+    AddButton group, "Clean &styles...", "CleanStyles", 1018, False
+    AddButton group, "&Reset used range...", "ResetUsedRange", 358, False
+    AddButton group, "Remove in&visible objects...", "RemoveInvisibleShapes", 493, False
+    AddButton group, "Delete e&mpty sheets...", "DeleteEmptySheets", 292, False
+    AddButton group, "Clean conditional &formatting...", "CleanConditionalFormats", 435, False
+    AddButton group, "&Break external links...", "BreakExternalLinks", 1664, True
 
-    AddButton root, "Clean &names...", "CleanNames", 472, True
-    AddButton root, "Clean &styles...", "CleanStyles", 1018, False
-    AddButton root, "&Reset used range...", "ResetUsedRange", 358, False
-    AddButton root, "Remove in&visible objects...", "RemoveInvisibleShapes", 493, False
-    AddButton root, "Delete e&mpty sheets...", "DeleteEmptySheets", 292, False
-    AddButton root, "Clean conditional &formatting...", "CleanConditionalFormats", 435, False
+    '--- Data: turning extracts into tables ----------------------------------
+    Set group = AddPopup(root, "&Data", False)
+    AddButton group, "Stack selected &sheets...", "StackSelectedSheets", 292, False
+    AddButton group, "Stack &files in a folder...", "StackFilesInFolder", 23, False
+    AddButton group, "&Unpivot a cross-tab...", "UnpivotSelection", 431, True
+    AddButton group, "Fill &blanks down...", "FillBlanksDown", 370, False
+    AddButton group, "Fu&zzy match two lists...", "FuzzyMatchLists", 1728, True
 
-    AddButton root, "&List defined names", "ShowNamesReport", 353, True
-    AddButton root, "List cell st&yles", "ShowStylesReport", 353, False
-    AddButton root, "External lin&ks...", "ShowExternalLinks", 1663, False
-    AddButton root, "&Break external links...", "BreakExternalLinks", 1664, False
-    AddButton root, "&Unhide all sheets", "UnhideAllSheets", 2110, False
+    '--- Cells: acts on the selection ----------------------------------------
+    Set group = AddPopup(root, "Cel&ls", False)
+    AddButton group, "&Trim and clean selection", "TrimAndCleanSelection", 384, False
+    AddButton group, "Selection to &values", "SelectionToValues", 370, False
+    AddButton group, "Remove &hyperlinks from selection", "RemoveHyperlinksFromSelection", 1691, False
 
-    AddButton root, "&Trim and clean selection", "TrimAndCleanSelection", 384, True
-    AddButton root, "Selection to &values", "SelectionToValues", 370, False
-    AddButton root, "Remove &hyperlinks from selection", "RemoveHyperlinksFromSelection", 1691, False
-
-    AddButton root, "Bac&kup this workbook", "BackupActiveWorkbook", 3, True
+    '--- Loose ends -----------------------------------------------------------
+    AddButton root, "&Unhide all sheets", "UnhideAllSheets", 2110, True
+    AddButton root, "Bac&kup this workbook", "BackupActiveWorkbook", 3, False
     AddButton root, "A&bout Workbook Doctor", "AboutDoctor", 487, True
 
     On Error GoTo 0
@@ -77,13 +95,29 @@ Public Sub RemoveDoctorMenu()
                           Tag:=MENU_TAG, Recursive:=True)
         If control Is Nothing Then Exit Do
         control.Delete
-    Loop While guard < 50
+    Loop While guard < 100
     On Error GoTo 0
 End Sub
 
 '==============================================================================
 ' Private helpers
 '==============================================================================
+Private Function AddPopup(ByVal parent As CommandBarPopup, ByVal caption As String, _
+                          ByVal startsGroup As Boolean) As CommandBarPopup
+    Dim popup As CommandBarPopup
+
+    On Error Resume Next
+    Set popup = parent.Controls.Add(Type:=msoControlPopup, Temporary:=True)
+    If popup Is Nothing Then Exit Function
+
+    popup.Caption = caption
+    popup.Tag = MENU_TAG
+    popup.BeginGroup = startsGroup
+    On Error GoTo 0
+
+    Set AddPopup = popup
+End Function
+
 Private Sub AddButton(ByVal parent As CommandBarPopup, ByVal caption As String, _
                       ByVal macroName As String, ByVal iconId As Long, _
                       ByVal startsGroup As Boolean)

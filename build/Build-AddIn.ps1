@@ -64,6 +64,9 @@ $moduleFiles = @(
     'addin\modDoctorTools.bas',
     'addin\modDoctorAudit.bas',
     'addin\modDoctorRunner.bas',
+    'addin\modWrangleStack.bas',
+    'addin\modWrangleShape.bas',
+    'addin\modWrangleMatch.bas',
     'addin\modDoctorMenu.bas'
 )
 $thisWorkbookFile = Join-Path $repoRoot 'addin\ThisWorkbook.cls'

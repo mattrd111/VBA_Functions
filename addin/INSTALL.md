@@ -41,11 +41,11 @@ No PowerShell, no trust setting, five minutes:
 2. **File → Import File…** and import all eight modules from `src`:
    `modApp`, `modArray`, `modDate`, `modDictionary`, `modFile`, `modRange`,
    `modString`, `modWorkbook`.
-3. Import all thirteen modules from `addin`:
+3. Import all sixteen modules from `addin`:
    `modDoctorCommon`, `modDoctorScan`, `modDoctorNames`, `modDoctorStyles`,
    `modDoctorSheets`, `modDoctorLinks`, `modDoctorTools`, `modDoctorAudit`,
-   `modDoctorRunner`, `modDoctorMenu`, `modAuditFormula`, `modAuditCore`,
-   `modModelAudit`.
+   `modDoctorRunner`, `modAuditFormula`, `modAuditCore`, `modModelAudit`,
+   `modWrangleStack`, `modWrangleShape`, `modWrangleMatch`, `modDoctorMenu`.
 4. Open `addin/ThisWorkbook.cls` in a text editor, copy everything from
    `Option Explicit` down, and paste it into the `ThisWorkbook` module of your
    new workbook. (Document modules cannot be imported — they have to be pasted.)
@@ -62,26 +62,67 @@ The menu appears on the **Add-ins** tab of the ribbon as **Workbook Doctor**.
 Start with **Audit workbook**. It changes nothing, and its first section is a
 list of what is actually worth doing to the workbook in front of you.
 
-| Menu item | What it does |
+The menu is grouped by what each tool does to your workbook.
+
+**Audit** — reads, reports, changes nothing.
+
+| | |
 | --- | --- |
-| Audit workbook (size and bloat) | Read-only health check: findings first, then the detail per sheet |
-| **Audit model (formulas)** | Read-only review of formula integrity: broken rows, numbers typed over formulas, hardcoded assumptions, volatile functions, error cells |
-| **Formula map (this sheet)** | One character per cell — the shape of a sheet in one screen |
-| **Select flagged cells (this sheet)** | Selects the suspect cells so you can see them in context |
-| Clean everything (safe) | Runs the low-risk half of every tool in one pass |
-| Clean names | Deletes broken, external-link and hidden defined names; unused ones are opt-in |
-| Clean styles | Deletes duplicate styles (`Normal 2`), or every custom style |
+| Audit workbook (size and bloat) | Health check: findings first, then the detail per sheet |
+| Audit model (formulas) | Formula integrity: broken rows, numbers typed over formulas, hardcoded assumptions, volatile functions, error cells |
+| Formula map (this sheet) | One character per cell — the shape of a sheet in one screen |
+| Select flagged cells (this sheet) | Selects the suspects so you can see them in context |
+| List defined names / List cell styles | Report only |
+| External links | Every linked workbook, whether the file is still there, and the cells that depend on it |
+
+**Clean** — changes the workbook. Each one confirms and offers a backup.
+
+| | |
+| --- | --- |
+| Clean everything (safe) | The low-risk half of the tools below, in one pass |
+| Clean names | Broken, external-link and hidden defined names; unused ones are opt-in |
+| Clean styles | Duplicate styles (`Normal 2`), or every custom style |
 | Reset used range | Trims each sheet back to its real data |
 | Remove invisible objects | Hidden and zero-size shapes left by bad pastes |
 | Delete empty sheets | Sheets with no cells, shapes, tables or pivots |
 | Clean conditional formatting | Removes rules that apply only to empty cells |
-| List defined names / List cell styles | Report only, changes nothing |
-| External links / Break external links | Lists them, or replaces linked formulas with values |
-| Unhide all sheets | Including very hidden ones |
+| Break external links | Replaces linked formulas with their values |
+
+**Data** — turning an extract into something you can pivot.
+
+| | |
+| --- | --- |
+| Stack selected sheets | Ctrl+click the tabs, then run it. Columns are matched by header name, not position |
+| Stack files in a folder | The same, across every workbook in a folder |
+| Unpivot a cross-tab | Months across the top become rows down the side |
+| Fill blanks down | The group label that appears once and is blank for the next forty rows |
+| Fuzzy match two lists | Two lists that are the same list, where none of the strings match |
+
+**Cells** — acts on the selection.
+
+| | |
+| --- | --- |
 | Trim and clean selection | Strips non-breaking spaces, control characters, doubled spaces |
 | Selection to values | Freezes formulas |
 | Remove hyperlinks from selection | Keeps the text |
-| Backup this workbook | Timestamped copy beside the original |
+
+And loose: **Unhide all sheets** (including very hidden ones) and **Backup this
+workbook** (timestamped copy beside the original).
+
+## Stacking and matching
+
+**Stack selected sheets** takes the sheets you have Ctrl+clicked in the tab bar,
+so there is no list to drive. Both stackers match columns by header *name*: a
+source with its columns in a different order lands in the right place, a source
+missing a column leaves blanks, and the stack report names which source was
+missing what. That report is usually the finding, not the footnote.
+
+**Fuzzy match two lists** works in three passes: exact once both sides are
+tidied, exact once company decoration is stripped (`THE Acme Group Ltd.` and
+`Acme Group Limited` are the same company), then closest match by edit distance.
+It gives you a score, a verdict, and the *next best* match with its score —
+because when the best and second-best are close, the match is a coin toss
+however high the score looks. The `Your call` column is left empty on purpose.
 
 ## Reading a model audit
 
