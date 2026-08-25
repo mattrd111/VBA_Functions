@@ -1,3 +1,4 @@
 # VBA modules are imported into the VBA editor, which expects Windows line
 # endings. Keep the bytes exactly as committed on every platform.
 *.bas -text
+*.cls -text

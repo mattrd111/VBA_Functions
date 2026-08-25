@@ -8,6 +8,11 @@ handling files, and leaving Excel exactly as you found it.
 Nothing here needs a project reference, a class module or an add-in. Import a
 `.bas` file and the functions are available.
 
+It also ships **Workbook Doctor**, an Excel add-in built on top of the library
+that cleans out unused defined names, duplicate cell styles, runaway used ranges
+and the rest of the junk that makes a workbook heavy —
+[build and install it](addin/INSTALL.md).
+
 ---
 
 ## What's in it
@@ -23,6 +28,7 @@ Nothing here needs a project reference, a class module or an add-in. Import a
 | [`modString`](src/modString.bas) | Cleaning, slicing, padding, regular expressions, fuzzy matching |
 | [`modWorkbook`](src/modWorkbook.bas) | Creating, finding and clearing sheets, opening workbooks, PDF export |
 | [`modExamples`](examples/modExamples.bas) | Runnable examples of the patterns above |
+| [`addin/`](addin) | **Workbook Doctor** — the clean-up add-in built on the modules above |
 
 Every module in `src` is standalone — import one without the others and it
 still compiles. Only `modExamples` depends on the rest.
@@ -227,6 +233,73 @@ merely looks numeric alone — so `"007"` and `7` stay apart.
 | `ExportToPdf(target, path, [openAfter])` | Workbook, sheet or range |
 | `RefreshAllAndWait([wb])` | Unlike `RefreshAll`, does not return early |
 | `ProtectAllSheets([wb], [password])` / `UnprotectAllSheets(…)` | |
+
+---
+
+## Workbook Doctor (the add-in)
+
+A workbook that has had sheets copied into it for a few years quietly collects
+tens of thousands of cell styles, hundreds of broken defined names, a used range
+that runs to row 1,048,576 and a pile of invisible drawing objects. It opens
+slowly, saves slowly, and one day says *"Too many different cell formats"*.
+
+Workbook Doctor finds all of that and offers to remove it. It lives on the
+**Add-ins** tab of the ribbon.
+
+**Start with Audit workbook.** It changes nothing and its first section is a
+prioritised list of what is actually worth doing to the workbook in front of you:
+
+```
+What is worth doing
+Priority   Tool                       Why
+High       Clean styles               8,412 duplicate styles such as 'Normal 2'
+High       Reset used range           1,048,300 empty rows are still counted as used
+Medium     Clean names                37 broken, external or hidden name(s)
+High       Fix by hand                2 name(s) refer to #REF! and are still used by formulas
+Low        Remove invisible objects   14 hidden or zero-size drawing object(s)
+```
+
+Then run the tools it points at, or **Clean everything (safe)** for the low-risk
+half of all of them in one pass.
+
+| | |
+| --- | --- |
+| **Names** | Classifies every name as reserved, in use, broken, external, hidden or unused, and deletes only the categories you approve. "Unused" is worked out by reading every formula, conditional format, validation rule, chart series, pivot source and other name — so it is a good guess, not a fact, which is why deleting those is a separate opt-in |
+| **Styles** | Duplicates-only mode removes `Normal 2`, `Comma 3 4` and friends; the aggressive mode removes every custom style. Esc stops a long run |
+| **Used range** | Trims each sheet back to its real data, protecting anything anchored under a shape or chart |
+| **Sheets** | Deletes genuinely empty sheets, unhides very hidden ones, removes invisible and zero-size drawing objects |
+| **Conditional formatting** | Counts rules per sheet and removes the ones that apply only to empty cells |
+| **Links** | Lists every linked workbook, says which files have gone missing, shows the cells that depend on them, and breaks them on request |
+| **Selection tools** | Trim and clean text, freeze formulas to values, strip hyperlinks |
+| **Backup** | Timestamped copy beside the original, offered automatically before anything destructive |
+
+Nothing it does can be undone with Ctrl+Z, so every destructive action confirms
+first and offers a backup. Read
+[addin/INSTALL.md](addin/INSTALL.md) for the build, the full menu and the
+caveats worth knowing before you point it at a workbook that matters.
+
+### Building it
+
+The `.xlam` is not committed — a binary in git is a binary nobody can review.
+Build it from source in about thirty seconds:
+
+```powershell
+cd build
+.\Build-AddIn.ps1 -Install
+```
+
+or import the modules by hand: [addin/INSTALL.md](addin/INSTALL.md).
+
+---
+
+## Repository layout
+
+```
+src/        the library - eight standalone modules, no dependencies
+addin/      Workbook Doctor - the add-in, built on src
+build/      Build-AddIn.ps1, which assembles the .xlam
+examples/   runnable examples of the library patterns
+```
 
 ---
 

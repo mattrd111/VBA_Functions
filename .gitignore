@@ -1,0 +1,6 @@
+# The add-in is built from source, never committed - see addin/INSTALL.md
+dist/
+*.xlam
+*.xlsm
+*.xlsb
+~$*
