@@ -33,6 +33,35 @@ workbook:
 Tick it, build, and untick it afterwards if you would rather not leave it on.
 Nothing else needs it.
 
+## If PowerShell is blocked
+
+On a managed machine you will most likely get:
+
+> running scripts is disabled on this system
+
+Try the bypass first, which changes no machine setting:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\Build-AddIn.ps1 -Install
+```
+
+If Group Policy is enforcing the policy that will fail too. `Get-ExecutionPolicy -List`
+tells you: a value against **MachinePolicy** or **UserPolicy** means it is locked
+and no flag will get past it.
+
+In that case use the VBA builder instead, which needs no PowerShell at all:
+
+1. Excel: turn on **Trust access to the VBA project object model** (as above).
+2. New blank workbook, `Alt+F11`, **File → Import File…**, pick
+   [`build/BuildAddIn.bas`](../build/BuildAddIn.bas).
+3. Put the cursor in `BuildWorkbookDoctor` and press **F5**.
+4. Point it at the folder you unzipped - the one with `src` and `addin` in it.
+5. Close the builder workbook without saving.
+
+It imports all 28 modules, merges `ThisWorkbook`, saves the `.xlam` into your
+Excel add-ins folder and switches it on - the same job the PowerShell script
+does, from inside Excel.
+
 ## Or build it by hand
 
 No PowerShell, no trust setting, five minutes:
