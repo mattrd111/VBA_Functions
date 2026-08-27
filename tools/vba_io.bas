@@ -9,16 +9,19 @@ Option Explicit
 '
 ' ExportModules writes every component to <repo>\src\ (tests go to <repo>\tests\).
 ' ImportModules replaces the project's components from those folders.
-' Both take the repo root as an argument; default is the workbook's own folder.
+' Both take the repo root as an optional argument. With no argument they work it
+' out: a workbook in <repo>\workbook\ resolves to <repo>, anything else uses the
+' workbook's own folder. So from a workbook in workbook\, just run ExportModules.
 
 Public Sub ExportModules(Optional ByVal repoRoot As String = "")
     Dim comp As Object, targetDir As String, ext As String, saved As Long
     On Error GoTo Fail
 
-    If Len(repoRoot) = 0 Then repoRoot = ThisWorkbook.path
+    If Len(repoRoot) = 0 Then repoRoot = RepoRootFromWorkbook()
     For Each comp In ThisWorkbook.VBProject.VBComponents
         ext = ComponentExtension(comp.Type)
         If Len(ext) = 0 Then GoTo NextComp
+        If comp.Name = "vba_io" Then GoTo NextComp   ' this helper stays out of src\
 
         If Left$(comp.Name, 5) = "Test_" Or comp.Name Like "*TestRunner*" Or comp.Name = "modAssert" Then
             targetDir = repoRoot & "\tests"
@@ -43,7 +46,7 @@ Public Sub ImportModules(Optional ByVal repoRoot As String = "")
     Dim proj As Object
     On Error GoTo Fail
 
-    If Len(repoRoot) = 0 Then repoRoot = ThisWorkbook.path
+    If Len(repoRoot) = 0 Then repoRoot = RepoRootFromWorkbook()
     Set proj = ThisWorkbook.VBProject
     folders = Array(repoRoot & "\src", repoRoot & "\tests")
 
@@ -64,6 +67,19 @@ Public Sub ImportModules(Optional ByVal repoRoot As String = "")
 Fail:
     MsgBox "Import failed (" & Err.Number & "): " & Err.Description, vbExclamation
 End Sub
+
+Private Function RepoRootFromWorkbook() As String
+    ' The workbook normally lives in <repo>\workbook\, so the repo root is one
+    ' level up. Anywhere else, assume the workbook sits in the repo root itself.
+    Dim path As String, leaf As String
+    path = ThisWorkbook.path
+    leaf = LCase$(Mid$(path, InStrRev(path, "\") + 1))
+    If leaf = "workbook" Then
+        RepoRootFromWorkbook = Left$(path, InStrRev(path, "\") - 1)
+    Else
+        RepoRootFromWorkbook = path
+    End If
+End Function
 
 Private Sub RemoveComponent(ByVal proj As Object, ByVal name As String)
     Dim comp As Object
