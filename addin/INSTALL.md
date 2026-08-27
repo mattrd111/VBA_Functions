@@ -70,12 +70,12 @@ No PowerShell, no trust setting, five minutes:
 2. **File → Import File…** and import all ten modules from `src`:
    `modApp`, `modArray`, `modDate`, `modDictionary`, `modFile`, `modFinance`,
    `modRange`, `modString`, `modWaterfall`, `modWorkbook`.
-3. Import all nineteen modules from `addin`:
+3. Import all twenty modules from `addin`:
    `modDoctorCommon`, `modDoctorScan`, `modDoctorNames`, `modDoctorStyles`,
    `modDoctorSheets`, `modDoctorLinks`, `modDoctorTools`, `modDoctorAudit`,
    `modDoctorRunner`, `modAuditFormula`, `modAuditCore`, `modModelAudit`,
    `modWrangleStack`, `modWrangleShape`, `modWrangleMatch`, `modFundHelper`,
-   `modHouseStyle`, `modDoctorMenu`.
+   `modWrangleBlocks`, `modHouseStyle`, `modDoctorMenu`.
 4. Open `addin/ThisWorkbook.cls` in a text editor, copy everything from
    `Option Explicit` down, and paste it into the `ThisWorkbook` module of your
    new workbook. (Document modules cannot be imported — they have to be pasted.)
@@ -124,6 +124,8 @@ The menu is grouped by what each tool does to your workbook.
 | --- | --- |
 | Stack selected sheets | Ctrl+click the tabs, then run it. Columns are matched by header name, not position |
 | Stack files in a folder | The same, across every workbook in a folder |
+| Stack blocks on a sheet | For a tab holding several tables: finds them by the blank rows and columns between them, then stacks the ones sharing a header row |
+| Stack ranges I pick | You Ctrl-click the blocks yourself, across sheets and open workbooks |
 | Unpivot a cross-tab | Months across the top become rows down the side |
 | Fill blanks down | The group label that appears once and is blank for the next forty rows |
 | Fuzzy match two lists | Two lists that are the same list, where none of the strings match |
@@ -153,6 +155,17 @@ And loose: **Unhide all sheets** (including very hidden ones) and **Backup this
 workbook** (timestamped copy beside the original).
 
 ## Stacking and matching
+
+**Stack blocks on a sheet** is for the other shape: not one table per tab, but
+twelve monthly blocks down a single one, or a pack with four tables on it. It
+finds the blocks by the blank rows and columns between them, tells you how many
+share the most common header row, and lets you stack just those or all of them.
+Choosing Cancel lists what it found and changes nothing, which is the safe first
+move on an unfamiliar tab.
+
+**Stack ranges I pick** is the manual version, for tables that run together with
+no gap or blocks scattered across sheets and open workbooks. Ctrl-click as many
+as you like at each prompt; Cancel when you have them all.
 
 **Stack selected sheets** takes the sheets you have Ctrl+clicked in the tab bar,
 so there is no list to drive. Both stackers match columns by header *name*: a

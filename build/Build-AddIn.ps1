@@ -75,6 +75,7 @@ $moduleFiles = if ($Loader) { @('loader\modLoader.bas') } else { @(
     'addin\modDoctorRunner.bas',
     'addin\modWrangleStack.bas',
     'addin\modWrangleShape.bas',
+    'addin\modWrangleBlocks.bas',
     'addin\modWrangleMatch.bas',
     'addin\modFundHelper.bas',
     'addin\modHouseStyle.bas',

@@ -337,6 +337,13 @@ lands in the right place and one missing a column leaves blanks. The stack
 report names which source was missing what, which is usually the finding rather
 than the footnote. **Stack files in a folder** does the same across a directory.
 
+**Stack blocks on a sheet** handles the other shape: not one table per tab, but
+twelve monthly blocks down a single one. It finds them by the blank rows and
+columns between them — the detection is tested outside Excel in
+`build/test_block_finder.py` — reports how many share the most common header
+row, and stacks those or all of them. **Stack ranges I pick** is the manual
+version for tables that run together with no gap.
+
 **Unpivot a cross-tab** turns months running across the top into rows down the
 side. **Fill blanks down** fixes the group label that appears once and is blank
 for the next forty rows. Between them they are what stands between a management
@@ -359,7 +366,7 @@ number looks. The `Your call` column is left empty on purpose.
 | **Links** | Lists every linked workbook, says which files have gone missing, shows the cells that depend on them, and breaks them on request |
 | **Selection tools** | Trim and clean text, freeze formulas to values, strip hyperlinks |
 | **Model integrity** | Row-by-row formula consistency, numbers typed over formulas, hardcoded assumptions, volatile functions, whole-column references, error cells — all read-only |
-| **Data** | Stack many extracts into one table matched by header name, unpivot a cross-tab, fill blanks down, fuzzy-match two lists that nearly agree |
+| **Data** | Stack many extracts into one table matched by header name — whole sheets, whole folders, or separate blocks on one tab — unpivot a cross-tab, fill blanks down, fuzzy-match two lists that nearly agree |
 | **Fund maths** | IRR, DPI/TVPI/MOIC, accrued preferred return, KS-PME and a distribution waterfall, as worksheet functions. **Fund maths reference sheet** builds a worked example of every one |
 | **House style** | Number format cycling, the Alpha FMC table style, input/formula colouring, chart colours, palette reference |
 | **Backup** | Timestamped copy beside the original, offered automatically before anything destructive |
@@ -450,6 +457,7 @@ with real edge cases, so it has a test that runs outside Excel:
 ```
 python build/test_formula_parser.py     # the audit's hardcode rules
 python build/test_fund_maths.py         # IRR, multiples, preferred return, waterfall
+python build/test_block_finder.py       # finding the separate tables on one tab
 ```
 
 Both mirror the VBA in Python and check it against answers that are known

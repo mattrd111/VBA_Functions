@@ -60,6 +60,8 @@ Public Sub BuildDoctorMenu()
     Set group = AddPopup(root, "&Data", False)
     AddButton group, "Stack selected &sheets...", "StackSelectedSheets", 292, False
     AddButton group, "Stack &files in a folder...", "StackFilesInFolder", 23, False
+    AddButton group, "Stack &blocks on a sheet...", "StackBlocksOnSheet", 292, False
+    AddButton group, "Stack ranges &I pick...", "StackChosenRanges", 431, False
     AddButton group, "&Unpivot a cross-tab...", "UnpivotSelection", 431, True
     AddButton group, "Fill &blanks down...", "FillBlanksDown", 370, False
     AddButton group, "Fu&zzy match two lists...", "FuzzyMatchLists", 1728, True

@@ -186,9 +186,14 @@ Private Function PickSheet(ByVal wb As Workbook, ByVal sheetName As String) As W
 End Function
 
 '==============================================================================
-' Private - building the output
+' Building the output
+'------------------------------------------------------------------------------
+' Public because modWrangleBlocks feeds it too. A source is
+'   Array(sourceName, sheetName, headers(), data())
+' with headers 1-based and data a 2D block, and the columns are matched by
+' header name rather than position.
 '==============================================================================
-Private Sub BuildStack(ByVal sources As Collection, ByVal title As String, ByVal origin As String)
+Public Sub BuildStack(ByVal sources As Collection, ByVal title As String, ByVal origin As String)
     Dim masterIndex As Object
     Dim masterOrder As Collection
     Dim source As Variant
