@@ -16,7 +16,19 @@ Attribute VB_Name = "BuildAddIn"
 '
 '   3  File > Import File... and pick THIS file (build\BuildAddIn.bas).
 '
-'   4  Put the cursor anywhere in BuildWorkbookDoctor below and press F5.
+'   4  Put the cursor in one of these and press F5:
+'
+'      BuildWorkbookDoctor     build it and install it on this machine.
+'                              The one to use if you just want it working here.
+'
+'      BuildMasterForSharing   build it into a folder you pick, without
+'                              installing. This is the copy that goes in the
+'                              shared SharePoint folder for the loader to
+'                              collect - see loader\README.md.
+'
+'      BuildLoader             build and install the loader, which is what each
+'                              person installs once when you are updating from
+'                              a shared folder.
 '
 '   5  It asks for the folder holding src and addin - point it at the folder
 '      you unzipped, then let it run.
@@ -29,19 +41,47 @@ Attribute VB_Name = "BuildAddIn"
 Option Explicit
 
 Private Const ADDIN_NAME As String = "WorkbookDoctor.xlam"
+Private Const LOADER_NAME As String = "WorkbookDoctorLoader.xlam"
 Private Const ADDIN_TITLE As String = "Workbook Doctor"
 
 '------------------------------------------------------------------------------
 ' BuildWorkbookDoctor
-' Run this one.
+' Build the add-in and switch it on here. The everyday one.
 '------------------------------------------------------------------------------
 Public Sub BuildWorkbookDoctor()
+    BuildPackage False, True
+End Sub
+
+'------------------------------------------------------------------------------
+' BuildMasterForSharing
+' Build the add-in into a folder you choose and do not install it. Put the
+' result in the shared folder the loader reads from.
+'------------------------------------------------------------------------------
+Public Sub BuildMasterForSharing()
+    BuildPackage False, False
+End Sub
+
+'------------------------------------------------------------------------------
+' BuildLoader
+' Build the loader and switch it on here. Each person installs this once; it
+' keeps itself pointed at the shared copy from then on.
+'------------------------------------------------------------------------------
+Public Sub BuildLoader()
+    BuildPackage True, True
+End Sub
+
+'==============================================================================
+' The worker
+'==============================================================================
+Private Sub BuildPackage(ByVal loaderOnly As Boolean, ByVal installHere As Boolean)
     Dim sourceFolder As String
     Dim target As Workbook
     Dim project As Object
     Dim imported As Long
     Dim outputPath As String
     Dim report As String
+    Dim outputName As String
+    Dim classPath As String
 
     If Not TrustIsOn() Then
         MsgBox "Excel will not let this write code into a workbook yet." & vbNewLine & vbNewLine & _
@@ -54,15 +94,24 @@ Public Sub BuildWorkbookDoctor()
     sourceFolder = AskForFolder()
     If Len(sourceFolder) = 0 Then Exit Sub
 
-    If Not FolderHasSource(sourceFolder) Then
-        MsgBox "That folder does not hold 'src' and 'addin' subfolders." & vbNewLine & vbNewLine & _
-               "Pick the folder you unzipped - the one with src, addin and build inside it.", _
-               vbExclamation, ADDIN_TITLE
+    If Not FolderHasSource(sourceFolder, loaderOnly) Then
+        MsgBox "That folder does not hold the source." & vbNewLine & vbNewLine & _
+               IIf(loaderOnly, "Expected a 'loader' subfolder.", _
+                               "Expected 'src' and 'addin' subfolders.") & vbNewLine & _
+               "Pick the folder you unzipped.", vbExclamation, ADDIN_TITLE
         Exit Sub
     End If
 
-    outputPath = Application.UserLibraryPath & ADDIN_NAME
-    If Not ReadyToOverwrite(outputPath) Then Exit Sub
+    outputName = IIf(loaderOnly, LOADER_NAME, ADDIN_NAME)
+
+    If installHere Then
+        outputPath = Application.UserLibraryPath & outputName
+        If Not ReadyToOverwrite(outputName, outputPath) Then Exit Sub
+    Else
+        outputPath = AskForFolder("Where should " & outputName & " be written?")
+        If Len(outputPath) = 0 Then Exit Sub
+        outputPath = outputPath & outputName
+    End If
 
     Application.ScreenUpdating = False
     On Error GoTo Failed
@@ -70,8 +119,14 @@ Public Sub BuildWorkbookDoctor()
     Set target = Application.Workbooks.Add
     Set project = target.VBProject
 
-    imported = ImportFolder(project, sourceFolder & "src\", report)
-    imported = imported + ImportFolder(project, sourceFolder & "addin\", report)
+    If loaderOnly Then
+        imported = ImportFolder(project, sourceFolder & "loader\", report)
+        classPath = sourceFolder & "loader\ThisWorkbook.cls"
+    Else
+        imported = ImportFolder(project, sourceFolder & "src\", report)
+        imported = imported + ImportFolder(project, sourceFolder & "addin\", report)
+        classPath = sourceFolder & "addin\ThisWorkbook.cls"
+    End If
 
     If imported = 0 Then
         target.Close SaveChanges:=False
@@ -81,11 +136,11 @@ Public Sub BuildWorkbookDoctor()
         Exit Sub
     End If
 
-    If Not MergeThisWorkbook(project, target, sourceFolder & "addin\ThisWorkbook.cls") Then
+    If Not MergeThisWorkbook(project, target, classPath) Then
         report = report & vbNewLine & "  ThisWorkbook.cls could not be merged - the menu will not appear."
     End If
 
-    SetTitle target
+    SetTitle target, loaderOnly
     target.IsAddin = True
 
     Application.DisplayAlerts = False
@@ -95,12 +150,14 @@ Public Sub BuildWorkbookDoctor()
     target.Close SaveChanges:=False
     Application.ScreenUpdating = True
 
-    Install outputPath
+    If installHere Then Install outputPath
 
-    MsgBox ADDIN_TITLE & " built and installed." & vbNewLine & vbNewLine & _
+    MsgBox outputName & IIf(installHere, " built and installed.", " built.") & vbNewLine & vbNewLine & _
            imported & " modules imported." & vbNewLine & _
            outputPath & vbNewLine & vbNewLine & _
-           "Look for 'Workbook Doctor' on the Add-ins tab of the ribbon." & vbNewLine & vbNewLine & _
+           IIf(installHere, _
+               "Look on the Add-ins tab of the ribbon." & vbNewLine & vbNewLine, _
+               "Put this in the shared folder the loader reads from." & vbNewLine & vbNewLine) & _
            "Close this builder workbook without saving." & _
            IIf(Len(report) > 0, vbNewLine & vbNewLine & "Notes:" & report, ""), _
            vbInformation, ADDIN_TITLE
@@ -133,14 +190,15 @@ Private Function TrustIsOn() As Boolean
     On Error GoTo 0
 End Function
 
-Private Function AskForFolder() As String
+Private Function AskForFolder(Optional ByVal prompt As String = _
+                             "Pick the folder holding src, addin and loader") As String
     Dim dialog As Object
     Dim path As String
 
     On Error GoTo Done
     Set dialog = Application.FileDialog(4)                     ' msoFileDialogFolderPicker
     With dialog
-        .title = "Pick the folder holding src and addin"
+        .title = prompt
         .AllowMultiSelect = False
         If .Show <> -1 Then Exit Function
         path = .SelectedItems(1)
@@ -151,9 +209,13 @@ Private Function AskForFolder() As String
 Done:
 End Function
 
-Private Function FolderHasSource(ByVal folder As String) As Boolean
-    FolderHasSource = (Len(Dir$(folder & "src\*.bas")) > 0) And _
-                      (Len(Dir$(folder & "addin\*.bas")) > 0)
+Private Function FolderHasSource(ByVal folder As String, ByVal loaderOnly As Boolean) As Boolean
+    If loaderOnly Then
+        FolderHasSource = (Len(Dir$(folder & "loader\*.bas")) > 0)
+    Else
+        FolderHasSource = (Len(Dir$(folder & "src\*.bas")) > 0) And _
+                          (Len(Dir$(folder & "addin\*.bas")) > 0)
+    End If
 End Function
 
 ' Imports every .bas in a folder. Returns how many went in.
@@ -212,11 +274,14 @@ Private Function MergeThisWorkbook(ByVal project As Object, ByVal target As Work
 Done:
 End Function
 
-Private Sub SetTitle(ByVal target As Workbook)
+Private Sub SetTitle(ByVal target As Workbook, ByVal loaderOnly As Boolean)
     On Error Resume Next
-    target.BuiltinDocumentProperties("Title").value = ADDIN_TITLE
+    target.BuiltinDocumentProperties("Title").value = _
+        ADDIN_TITLE & IIf(loaderOnly, " Loader", "")
     target.BuiltinDocumentProperties("Comments").value = _
-        "Clean-up, audit and fund tools for Excel. github.com/mattrd111/VBA_Functions"
+        IIf(loaderOnly, "Keeps Workbook Doctor up to date from a shared folder.", _
+                        "Clean-up, audit and fund tools for Excel.") & _
+        " github.com/mattrd111/VBA_Functions"
     On Error GoTo 0
 End Sub
 
@@ -231,7 +296,7 @@ Private Sub Install(ByVal path As String)
 End Sub
 
 ' An add-in already loaded holds its file open, so it has to go first.
-Private Function ReadyToOverwrite(ByVal path As String) As Boolean
+Private Function ReadyToOverwrite(ByVal fileName As String, ByVal path As String) As Boolean
     Dim item As AddIn
     Dim wasInstalled As Boolean
 
@@ -240,7 +305,7 @@ Private Function ReadyToOverwrite(ByVal path As String) As Boolean
 
     On Error Resume Next
     For Each item In Application.AddIns
-        If StrComp(item.Name, ADDIN_NAME, vbTextCompare) = 0 Then
+        If StrComp(item.Name, fileName, vbTextCompare) = 0 Then
             If item.Installed Then
                 wasInstalled = True
                 item.Installed = False
@@ -250,7 +315,7 @@ Private Function ReadyToOverwrite(ByVal path As String) As Boolean
     On Error GoTo 0
 
     If wasInstalled Then
-        MsgBox "An older " & ADDIN_NAME & " was loaded, so it has been switched off " & _
+        MsgBox "An older " & fileName & " was loaded, so it has been switched off " & _
                "and will be replaced.", vbInformation, ADDIN_TITLE
     End If
 End Function

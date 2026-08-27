@@ -28,22 +28,29 @@
 
 .EXAMPLE
     .\Build-AddIn.ps1 -Install
+
+.EXAMPLE
+    .\Build-AddIn.ps1 -Loader -Install
+    Builds the small loader instead, which each person installs once when the
+    add-in is being kept up to date from a shared folder. See loader\README.md.
 #>
 [CmdletBinding()]
 param(
     [string]$OutputPath,
-    [switch]$Install
+    [switch]$Install,
+    [switch]$Loader
 )
 
 $ErrorActionPreference = 'Stop'
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
+$addInFileName = if ($Loader) { 'WorkbookDoctorLoader.xlam' } else { 'WorkbookDoctor.xlam' }
 if (-not $OutputPath) {
-    $OutputPath = Join-Path $repoRoot 'dist\WorkbookDoctor.xlam'
+    $OutputPath = Join-Path $repoRoot "dist\$addInFileName"
 }
 
 # Library modules first, then the add-in itself.
-$moduleFiles = @(
+$moduleFiles = if ($Loader) { @('loader\modLoader.bas') } else { @(
     'src\modApp.bas',
     'src\modArray.bas',
     'src\modDate.bas',
@@ -72,8 +79,12 @@ $moduleFiles = @(
     'addin\modFundHelper.bas',
     'addin\modHouseStyle.bas',
     'addin\modDoctorMenu.bas'
-)
-$thisWorkbookFile = Join-Path $repoRoot 'addin\ThisWorkbook.cls'
+) }
+$thisWorkbookFile = if ($Loader) {
+    Join-Path $repoRoot 'loader\ThisWorkbook.cls'
+} else {
+    Join-Path $repoRoot 'addin\ThisWorkbook.cls'
+}
 
 # --- checks ----------------------------------------------------------------
 foreach ($relative in $moduleFiles) {
@@ -157,7 +168,8 @@ addin\INSTALL.md.
 
     # --- turn it into an add-in --------------------------------------------
     try {
-        $workbook.BuiltinDocumentProperties.Item('Title').Value = 'Workbook Doctor'
+        $workbook.BuiltinDocumentProperties.Item('Title').Value =
+            $(if ($Loader) { 'Workbook Doctor Loader' } else { 'Workbook Doctor' })
         $workbook.BuiltinDocumentProperties.Item('Comments').Value =
             'Clean-up tools for heavy Excel workbooks. github.com/mattrd111/VBA_Functions'
     }

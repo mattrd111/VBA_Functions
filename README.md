@@ -413,6 +413,14 @@ cd build
 
 or import the modules by hand: [addin/INSTALL.md](addin/INSTALL.md).
 
+### Keeping a team up to date
+
+For more than a handful of people, [`loader/`](loader) is the better shape: a
+small loader installs once on each machine and pulls the real add-in from a
+synced SharePoint folder, caching it locally. Releasing an update is then one
+file replaced on SharePoint — nobody reinstalls anything, and it works offline
+from the cache. [`loader/README.md`](loader/README.md) has the setup.
+
 ### Handing it to someone else
 
 The `.xlam` is the shippable unit, not the source. Whoever receives it needs no
@@ -431,6 +439,8 @@ build/      Build-AddIn.ps1, which assembles the .xlam
             BuildAddIn.bas, the same job from inside Excel when PowerShell is blocked
             test_*.py, which check the audit and fund maths outside Excel
 install/    what to send someone else, once the .xlam is built
+loader/     the self-updating setup: a small loader that pulls the add-in
+            from a shared SharePoint folder, so a release is one file replaced
 examples/   runnable examples of the library patterns
 ```
 
