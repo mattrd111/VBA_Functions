@@ -3,3 +3,7 @@ vba-test-results.json
 ~$*
 __pycache__/
 *.pyc
+
+# Workbooks under review - keep binaries out of git
+workbook/*
+!workbook/README.md
