@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 tools/vba_lint.py:*)",
+      "Bash(python3 tools/wb_inventory.py:*)",
+      "Bash(pwsh -File tools/Invoke-VbaTests.ps1:*)",
+      "Bash(git diff:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)"
+    ]
+  }
+}
