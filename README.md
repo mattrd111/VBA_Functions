@@ -413,15 +413,24 @@ cd build
 
 or import the modules by hand: [addin/INSTALL.md](addin/INSTALL.md).
 
+### Handing it to someone else
+
+The `.xlam` is the shippable unit, not the source. Whoever receives it needs no
+build step, no trust setting and no PowerShell change — those are only needed to
+build it. Zip the built `.xlam` together with the scripts in
+[`install/`](install) and they double-click one file.
+
 ---
 
 ## Repository layout
 
 ```
-src/        the library - eight standalone modules, no dependencies
+src/        the library - ten standalone modules, no dependencies
 addin/      Workbook Doctor - the add-in, built on src
 build/      Build-AddIn.ps1, which assembles the .xlam
-            test_formula_parser.py, which checks the audit's parsing rules
+            BuildAddIn.bas, the same job from inside Excel when PowerShell is blocked
+            test_*.py, which check the audit and fund maths outside Excel
+install/    what to send someone else, once the .xlam is built
 examples/   runnable examples of the library patterns
 ```
 
