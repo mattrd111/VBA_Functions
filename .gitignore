@@ -7,3 +7,6 @@ __pycache__/
 # Workbooks under review - keep binaries out of git
 workbook/*
 !workbook/README.md
+
+# Packaged skill (build output of skills/excel-workbook-review)
+*.skill

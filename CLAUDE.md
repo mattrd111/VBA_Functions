@@ -14,6 +14,7 @@ on PATH - check with `python --version` before reporting a tool as broken.
 ```
 python3 tools/vba_lint.py src tests --fail-on error     # static gate, exit 1 on errors
 python3 tools/wb_inventory.py workbook/Book.xlsm        # structural report
+python3 tools/vba_extract.py workbook/Book.xlsm -o src  # macros out of the binary
 pwsh -File tools/Invoke-VbaTests.ps1 -Workbook workbook/Book.xlsm
 ```
 
