@@ -1,0 +1,21 @@
+position ids: 818 fund keys: 818
+position dup ids: []
+fund dup keys: []
+case-insensitive dup position ids: []
+position ids not in fund: [] count 0
+fund keys not in position: []
+ids with wildcard chars * ? ~ : [] 0
+max id len: 31 ids with leading/trailing spaces: ['IK VII No.4 ']
+ids that look numeric: []
+position order sorted? True first 3: ['5AM Ventures IV', '83 North II', 'A8']
+company_nav data rows: 15133 last row: 15134
+company_nav source_tab!=position_id: 0 []
+company_nav rows with source_row 116-119: 0 []
+company_nav rows with blank company_id: 485 [(46, ['Abingworth VI', 'Abingworth VI', 120.0, 'Abingworth VI|120|2025-09-30', None]), (347, ['Accel Growth II', 'Accel Growth II', 120.0, 'Accel Growth II|120|2025-09-30', None]), (512, ['Accel London II', 'Accel London II', 124.0, 'Accel London II|124|2024-12-31', None]), (513, ['Accel London II', 'Accel London II', 124.0, 'Accel London II|124|2026-03-31', None]), (721, ['Accel London IV', 'Accel London IV', 120.0, 'Accel London IV|120|2025-09-30', None]), (722, ['Accel London IV', 'Accel London IV', 121.0, 'Accel London IV|121|2025-09-30', None]), (723, ['Accel London IV', 'Accel London IV', 122.0, 'Accel London IV|122|2025-09-30', None]), (724, ['Accel London IV', 'Accel London IV', 123.0, 'Accel London IV|123|2025-09-30', None]), (725, ['Accel London IV', 'Accel London IV', 124.0, 'Accel London IV|124|2025-09-30', None]), (726, ['Accel London IV', 'Accel London IV', 125.0, 'Accel London IV|125|2025-09-30', None])]
+company_nav lookup_key != source_tab|source_row|yyyy-mm-dd(Nav_date): 0 []
+company_nav rows beyond VBA bound 15131: [(15132, 'Yorktown IX|130|2026-03-31'), (15133, 'Yorktown IX|131|2025-06-30'), (15134, 'Yorktown IX|131|2026-03-31')]
+company_nav duplicate lookup_keys: 43 ['Edgewater Growth II|120|2026-03-31', 'Edgewater Growth II|121|2026-03-31', 'Edgewater Growth II|122|2026-03-31', 'Edgewater Growth II|123|2026-03-31', 'EQT VII|120|2025-12-31', 'EQT VII|121|2025-12-31', 'EQT VII|122|2025-12-31', 'EQT VII|123|2025-12-31']
+company_nav max key len: 46
+Nav_date types: Counter({'float': 15133})
+Abenex IV (A) company_nav rows: 2 [(42, 120.0, 'Abenex IV (A)|120|2024-09-30', 'NC_PQ/15558', 45565.0, 1.0), (43, 120.0, 'Abenex IV (A)|120|2025-12-31', 'NC_PQ/15558', 46022.0, 354772.0)]
+Abenex nav dates: [45565.0, 46022.0] headers: [45473, 45565, 45657, 45747, 45838, 45930, 46022]
